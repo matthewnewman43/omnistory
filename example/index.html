@@ -1,0 +1,24 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Embedded widget test</title>
+</head>
+<body>
+<h1>Embedded widget test</h1>
+<div id="myWidget"></div>
+<script>
+(function (window, document) {
+  var loader = function () {
+    var script = document.createElement("script"), tag = document.getElementsByTagName("script")[0];
+    script.src = "./../embed.min.js";
+    script.id = "omnistory-widget";
+    script.setAttribute('data-height','100');
+    script.setAttribute('data-width','100');
+    tag.parentNode.insertBefore(script, tag);
+  };
+  window.addEventListener ? window.addEventListener("load", loader, false) : window.attachEvent("onload", loader);
+})(window, document);
+</script>
+</body>
+</html>
