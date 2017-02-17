@@ -1,9 +1,9 @@
 var requirejs = {
     paths: {
-        text : "bower_components/text/text",
-        jquery: "bower_components/jquery/dist/jquery",
-        ractive: "bower_components/ractive/ractive",
-        'amd-loader': "bower_components/almond",
-        rv: "bower_components/rv/rv",
+        text : "node_modules/text/text",
+        jquery: "node_modules/jquery/dist/jquery",
+        ractive: "node_modules/ractive/ractive",
+        'amd-loader': "node_modules/amd-loader/amd-loader",
+        rv: "node_modules/rv/rv",
     }
 };

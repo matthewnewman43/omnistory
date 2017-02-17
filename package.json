@@ -1,0 +1,30 @@
+{
+  "name": "omnistory",
+  "version": "1.0.0",
+  "description": "",
+  "main": "example/index.html",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matthewnewman43/omnistory.git"
+  },
+  "author": "Matthew Newman",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matthewnewman43/omnistory/issues"
+  },
+  "homepage": "https://github.com/matthewnewman43/omnistory#readme",
+  "dependencies": {
+    "amd-loader": "0.0.5",
+    "amdclean": "^2.7.0",
+    "jquery": "^3.1.1",
+    "ractive": "^0.8.10",
+    "rv": "^0.1.8",
+    "text": "github:requirejs/text"
+  }
+}
