@@ -1,2 +1,3 @@
 /Makefile
-/bower_components/*
+/node_modules/*
+/.gitignore
