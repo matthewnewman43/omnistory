@@ -13,6 +13,8 @@
   var loader = function () {
     var json = '{"title":{"media":{"url":"http://socialmediaedge.com/wp-content/uploads/2014/05/title-tag.png","caption":"Caption to the title","credit":"<a href=\'http://socialmediaedge.com/wp-content/uploads/2014/05/title-tag.png\'>Credit of the picture</a>"},"text":{"headline":"Headline of the timeline","text":"Explanation of the title"},"sides":{"Side1":{"Name":"British","Description":"They are the british empire.","Color":"#CD2020"},"Side2":{"Name":"American","Description":"They are the british colonists.","Color":"#6891E2"}}},"events":[{"media":{"url":"http://technext.github.io/Evento/images/demo/bg-slide-01.jpg","caption":"Caption of first event pic","credit":"<a href=\'http://demo.themewagon.com/\'>Credit to first event pic</a>"},"start_date":{"month":"8","day":"9","year":"1963"},"text":{"headline":"First Event Title","facts":"First event description","side1":"Opinion 1","side2":"Opinion 2"}},{"media":{"url":"https://www.eventcombo.com/Images/ECImages/882f28cb-0cdd-47e2-bea2-e023fcda7c6a.jpg","caption":"Caption of second event pic","credit":"<a href=\'https://www.eventcombo.com/\'>Credit to second event pic</a>"},"start_date":{"year":"1978"},"text":{"headline":"Second Event Title","facts":"Second event description","side1":"Opinion 1","side2":"Opinion 2"}}]}';
 
+    var json2 = '{"title":{"media":{"url":"http://socialmediaedge.com/wp-content/uploads/2014/05/title-tag.png","caption":"Caption to the title","credit":"<a href=\'http://socialmediaedge.com/wp-content/uploads/2014/05/title-tag.png\'>Credit of the picture</a>"},"text":{"headline":"Headline of the timeline","text":"Explanation of the title"},"sides":{"Side1":{"Name":"British","Color":"#CD2020"},"Side2":{"Name":"American","Description":"They are the british colonists."}}},"events":[{"media":{"credit":"<a href=\'http://demox.themewagon.com/\'>Credit to first event pic</a>"},"start_date":{"day":"9","month":"8","year":"1963"},"text":{"headline":"First Event Title","facts":"First event description","side2":"Opinion 2"}},{"media":{"url":"https://www.eventcombo.com/Images/ECImages/882f28cb-0cdd-47e2-bea2-e023fcda7c6a.jpg","caption":"Caption of second event pic","credit":"<a href=\'https://www.eventcombo.com/\'>Credit to second event pic</a>"},"start_date":{"year":"1978"},"text":{"headline":"Second Event Title","facts":"Second event description","side1":"Opinion 1","side2":"Opinion 2"}}]}';
+
     var url = "http://matthewenewman.com/exampleJson.php";
 
     var script = document.createElement("script"), tag = document.getElementsByTagName("script")[0];
@@ -20,7 +22,7 @@
     script.id = "omnistory-widget";
     script.setAttribute('height','100');
     script.setAttribute('width','100');
-    script.setAttribute('data',json);
+    script.setAttribute('data',json2);
     tag.parentNode.insertBefore(script, tag);
   };
   window.addEventListener ? window.addEventListener("load", loader, false) : window.attachEvent("onload", loader);
