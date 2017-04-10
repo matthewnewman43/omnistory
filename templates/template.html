@@ -1,167 +1,32 @@
   <div class="_content-container">
-    <div class="slider-control"></div>
-    <div class="slider-bg"></div>
-    <i class="fa _event-title fa-circle-o title-icon _active" aria-hidden="true"></i>
-    <i class="fa _event-title fa-circle title-icon title-icon-after _active" aria-hidden="true"></i>
-      <h1 class="_title-of-timeline">American Revolution</h1>
-        <div class="_line"></div>
-
-    <div class="_axis" id="_axis">
-        <div class="_axis-container"></div>
-
-        <div class="_events">
-            <div class="_event _event-1">
-            </div>
-            <div class="_event _event-2">
-            </div>
-            <div class="_event _event-3">
-            </div>
-            <div class="_event _event-4">
-            </div>
-            <div class="_event _event-5">
-            </div>
-            <div class="_event _event-6">
-            </div>
-            <div class="_event _event-7">
-            </div>
-            <div class="_event _event-8">
-            </div>
-            <div class="_event _event-9">
-            </div>
-            <div class="_event _event-10">
-            </div>
-            <div class="_event _event-0">
-            </div>
-        </div>
-
-
-
-        <div class="_axisMajor">
-            <p class="_YearMajor">1760</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'61</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'62</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'63</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'64</p>
-            </div>
-        </div>
-        <div class="_axisMajor">
-            <p class="_YearMajor">1765</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'66</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'67</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'68</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'69</p>
-            </div>
-        </div>
-        <div class="_axisMajor">
-            <p class="_YearMajor">1770</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'71</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'72</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'73</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'74</p>
-            </div>
-        </div>
-        <div class="_axisMajor">
-            <p class="_YearMajor">1775</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'76</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'77</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'78</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'79</p>
-            </div>
-        </div>
-        <div class="_axisMajor">
-            <p class="_YearMajor">1780</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'81</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'82</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'83</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'84</p>
-            </div>
-        </div>
-        <div class="_axisMajor">
-            <p class="_YearMajor">1785</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'86</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'87</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'88</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'89</p>
-            </div>
-        </div>
-        <div class="_axisMajor">
-            <p class="_YearMajor">1790</p>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'91</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'92</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'93</p>
-            </div>
-            <div class="_axisMinor">
-                <p class="_YearMinor">'94</p>
-            </div>
-        </div>
+    <div class="_control-section">
+        <i class="fa fa-minus _minusControl" aria-hidden="true"></i>
+        <i class="fa fa-expand _expandControl" aria-hidden="true"></i>
+    </div>
+    <div class="_title-section">
+        <h1 class="_title-of-timeline">{{json.title.text.headline}}</h1>
     </div>
     <div class="_different-sides">
+        <div class="_left-control">
+            <i class="fa fa-caret-left _fa-caret-left _solid-color" aria-hidden="true"></i>
+        </div>
+
         <div class="_side1">
             <div class="_key-color1"></div>
-            <p class="_key-label1">Colonials</p>
+            <p class="_key-label1">{{json.title.sides.Side1.Name}}</p>
         </div>
         <div class="_side2">
             <div class="_key-color2"></div>
-            <p class="_key-label2">British</p>
+            <p class="_key-label2">{{json.title.sides.Side2.Name}}</p>
+        </div>
+
+        <div class="_right-control">
+            <i class="fa fa-caret-right _fa-caret-right _solid-color" aria-hidden="true"></i>
         </div>
     </div>
 
-<div class="_inner-info-container _event-title">
-    <div class="left-control">
-        <i class="fa fa-caret-left _fa-caret-left" aria-hidden="true"></i>
-    </div>
-    <div class="right-control">
-        <i class="fa fa-caret-right _fa-caret-right" aria-hidden="true"></i>
-    </div>
-
-    <div class="_inner-info-title-container">
+<div class="_inner-info-container _event-title _shade-color" id="_event-title">
+    <div class="_inner-info-title-container _solid-bgcolor">
         <div class="_inner-info-icon-container">
             <i class="fa fa-info-circle" aria-hidden="true"></i>
         </div>
@@ -169,7 +34,7 @@
             <h2 class="_inner-info-title"> {{json.title.text.headline}} </h2>
         </div>
     </div>
-    <div class="_inner-facts">
+    <div class="_inner-facts _more-opaque-color">
         <div class="_inner-info-section1">
             <span class="_date-and-facts">
                 <p class="_inner-info-date">{{range}}</p>
@@ -177,8 +42,8 @@
             </span>
         </div>
     </div>
-    <div class="opinion-container-{{h}}">
-        <div class="_inner-info-title-container">
+    <div class="opinion-container-{{h}} ">
+        <div class="_inner-info-title-container _solid-bgcolor">
             <div class="_inner-info-icon-container">
                 <i class="fa fa-commenting-o" aria-hidden="true"></i>
             </div>
@@ -186,12 +51,12 @@
                 <h2 class="_inner-info-title">Sides</h2>
             </div>
         </div>
-        <div class="_inner-title-facts">
+        <div class="_inner-title-facts _more-opaque-color">
             <div class="_inner-info-section1">
                 <p class="_inner-info-opinion"><b>{{json.title.sides.Side1.Name}}:</b><br> {{json.title.sides.Side1.Description}}</p>
             </div>
         </div>
-        <div class="_inner-title-facts">
+        <div class="_inner-title-facts _more-opaque-color">
             <div class="_inner-info-section1">
                 <p class="_inner-info-opinion"><b>{{json.title.sides.Side2.Name}}:</b><br> {{json.title.sides.Side2.Description}}</p>
             </div>
@@ -199,15 +64,8 @@
     </div>
 </div>
 {{#json.events:i }}
-<div class="_inner-info-container _event-{{i}}">
-    <div class="left-control">
-        <i class="fa fa-caret-left _fa-caret-left" aria-hidden="true"></i>
-    </div>
-    <div class="right-control">
-        <i class="fa fa-caret-right _fa-caret-right" aria-hidden="true"></i>
-    </div>
-
-    <div class="_inner-info-title-container">
+<div class="_inner-info-container _event-{{i}} _shade-color" id="_event-{{i}}">
+    <div class="_inner-info-title-container _solid-bgcolor">
         <div class="_inner-info-icon-container">
             <i class="fa fa-info-circle" aria-hidden="true"></i>
         </div>
@@ -215,7 +73,7 @@
             <h2 class="_inner-info-title"> {{json.events[i].text.headline}} </h2>
         </div>
     </div>
-    <div class="_inner-facts">
+    <div class="_inner-facts _more-opaque-color">
         <div class="_inner-info-section1">
             <span class="_date-and-facts">
                 <p class="_inner-info-date">Date: {{date_array[i]}}</p>
@@ -225,7 +83,7 @@
     </div>
     {{#sides:h}}
     <div class="opinion-container-{{h}} opinion">
-        <div class="_inner-info-title-container">
+        <div class="_inner-info-title-container _solid-bgcolor">
             <div class="_inner-info-icon-container">
                 <i class="fa fa-commenting-o" aria-hidden="true"></i>
             </div>
@@ -233,7 +91,7 @@
                 <h2 class="_inner-info-title">{{sides[h].Name}} Opinion</h2>
             </div>
         </div>
-        <div class="_inner-facts">
+        <div class="_inner-facts _more-opaque-color">
             <div class="_inner-info-section1">
                 <p class="_inner-info-opinion">{{json.events[i].text.side1}}</p>
             </div>
@@ -242,4 +100,43 @@
     {{/sides}}
 </div>
 {{/json.events}}
+
+
+<i class="fa _event-title fa-circle-o title-icon _active" aria-hidden="true"></i>
+<i class="fa _event-title fa-circle title-icon title-icon-after _active" aria-hidden="true"></i>
+
+      <div class="_axis-container">
+        <div class="_line"></div>
+        <div class="_axis" id="_axis">
+
+
+            <div class="_axis-container"></div>
+
+            <div class="_events">
+                {{#allEvents:k }}
+                    <div class="{{'_event _event-' + k}}">
+                    </div>
+                {{/allEvents}}
+            </div>
+
+
+            {{#timelineTicks:j }}
+            <div class="_axisMajor">
+                <p class="_YearMajor">{{timelineTicks[j][0]}}</p>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{timelineTicks[j][1]}}</p>
+                </div>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{timelineTicks[j][2]}}</p>
+                </div>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{timelineTicks[j][3]}}</p>
+                </div>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{timelineTicks[j][4]}}</p>
+                </div>
+            </div>
+            {{/timelineTicks}}
+        </div>
+    </div>
 </div>

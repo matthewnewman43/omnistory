@@ -57,7 +57,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
     //any variables not given in json are turned into empty strings
     json = this.cleanUpValues(json,errorChecking,jsonLevels);
     //console.log("Cleaned up json");
-    console.log(json);
+    //console.log(json);
 
     var date_arr = [];
     for(var j=0;j<json.events.length;j++) {
@@ -100,7 +100,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         }
         date_arr.push(formatted_date);
     }
-    console.log(date_arr);
+    //console.log(date_arr);
     //var dates = this.getIndividualFormattedDates(json.);
 
     //gets all the colors necessary for styling everything
@@ -110,6 +110,49 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
     //console.log("Colors to be used throughout project");
     //console.log(colors);
 
+    //console.log(json.events);
+
+    //min
+    //console.log("Min: ");
+    //console.log(dateRange[2]);
+
+    //console.log("Max: ");
+    //console.log(dateRange[3]);
+
+
+    //creates timeline axis
+    var timelineTicks = [];
+    for(var y=dateRange[2];y<dateRange[3];y+=5) {
+        var timelineLabels = [];
+        timelineLabels.push(y);
+        timelineLabels.push((y+1).toString().substring(2,4));
+        timelineLabels.push((y+2).toString().substring(2,4));
+        timelineLabels.push((y+3).toString().substring(2,4));
+        timelineLabels.push((y+4).toString().substring(2,4));
+        timelineTicks.push(timelineLabels);
+    }
+
+    //console.log(timelineTicks);
+
+
+    //creates object of all events
+    var allEvents = [];
+    for(var i=0;i<json.events.length;i++) {
+        var currEvent = [];
+        currEvent.push(json.events[i].media);
+        currEvent.push(json.events[i].start_date);
+        currEvent.push(json.events[i].text);
+        var ticksAfterMin = ((json.events[i].start_date.year - dateRange[2]) * 30)-7;
+        currEvent.push(ticksAfterMin);
+
+        //console.log(ticksAfterMin);
+        //console.log(currEvent);
+        allEvents.push(currEvent);
+    }
+    console.log(allEvents);
+
+
+    //adds css to page
     $style.text(css);
     $("head").append($style);
 
@@ -127,9 +170,108 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
               json: json,
               sides: json.title.sides,
               range: dateRange[0] + " - " + dateRange[1],
-              date_array: date_arr
+              date_array: date_arr,
+              timelineTicks: timelineTicks,
+              allEvents: allEvents
             },
             oncomplete: function(){
+                var n = 0;
+
+                //goes through all major and minor axis' and makes their positioning right
+                var spaceBetweenMajors = 150;
+                $("._axisMajor").each(function() {
+                    var currLeftPost = n*spaceBetweenMajors;
+                    $(this).css("left",currLeftPost);
+                    var whichMinor = 1;
+                    $(this).find("._axisMinor").each(function() {
+                        var currLeftMinor = whichMinor * (spaceBetweenMajors/5);
+                        $(this).css("left",currLeftMinor);
+                        whichMinor++;
+                    });
+                    n++;
+                });
+
+                var lastMinorLeft = $("._axisMinor:last-child").css("left");
+                var lastMajorLeft = $("._axisMajor:last-child").css("left");
+
+                var widthOfTimelineContent = parseInt(lastMinorLeft.substring(0,lastMajorLeft.length-2)) + parseInt(lastMajorLeft.substring(0,lastMajorLeft.length-2)) + 10;
+                //console.log("Minor: ");
+                //console.log(parseInt(lastMinorLeft.substring(0,lastMajorLeft.length-2)));
+
+                //console.log("Major: ");
+                //console.log(parseInt(lastMajorLeft.substring(0,lastMajorLeft.length-2)));
+
+                $("#_axis").css("width",widthOfTimelineContent);
+
+                var whichEvent = 0;
+                $("._event").each(function() {
+                    $(this).css("left",allEvents[whichEvent][3]);
+                    console.log(allEvents[whichEvent][3]);
+                    whichEvent++;
+                });
+
+
+
+
+                var animationHappening = false;
+
+
+
+                var makeEventActive = function(titleOrNormal,curr_color, makeEventActiveSelector, which, event, duration) {
+                    if(titleOrNormal === "not") {
+
+                        adjustForAnimation(makeEventActiveSelector, "left", 2);
+
+                        $(makeEventActiveSelector).addClass("_clicked");
+
+                        setTimeout(function(){
+                            $(makeEventActiveSelector).addClass("_active _clicked");
+                            if(!animationHappening) {
+                                setEverythingToColors(curr_color, "change", event, duration);
+                            }
+                        }, 100);
+                    }
+
+                    else if(titleOrNormal === "title") {
+                        $(makeEventActiveSelector).addClass("_clicked");
+                        setTimeout(function(){
+                            $(makeEventActiveSelector).addClass("_active _clicked");
+                            $(makeEventActiveSelector + "-after").addClass("_active _clicked");
+                            if(!animationHappening) {
+                                setEverythingToColors(curr_color, "change", event, duration);
+                            }
+                        }, 100);
+                    }
+                    else if(titleOrNormal === "start") {
+                        $(".title-icon").addClass("_active _clicked");
+                        $(".title-icon-after").addClass("_active _clicked");
+                        if(!animationHappening) {
+                            setEverythingToColors(curr_color, "start", event, duration);
+                        }
+                    }
+                };
+                var adjustForAnimation = function(selector, leftOrRight, amt) {
+                    if(!$(selector).hasClass("_clicked") && leftOrRight === "left") {
+                        console.log("ran");
+                        var oldLeft = parseInt($(selector).css("left").substr(0,$(selector).css("left").length-2));
+                        var newLeftPost = oldLeft - amt;
+                        //console.log("Old: " + oldLeft);
+                        //console.log(newLeftPost + "px");
+                        $(selector).css("left",newLeftPost);
+                    }
+                    else if($(selector).hasClass("_clicked") && leftOrRight === "right") {
+                        var oldLeft = parseInt($(selector).css("left").substr(0,$(selector).css("left").length-2));
+                        var newLeftPost = oldLeft + amt;
+                        console.log("Old: " + oldLeft);
+                        console.log(newLeftPost + "px");
+                        $(selector).css("left",newLeftPost);
+                    }
+                }
+
+                var setKeyColors = function(color1, color1Shadow, color2, color2Shadow) {
+                    $("._key-color1").css("background-color", color1);
+                    $("._key-color2").css("background-color", color2);
+                };
                 //functions
                 var hide_axis = function(classToCheck, durationOfFade, startOrNah) {
                     var original_line_left = $("._line").offset().left;
@@ -137,14 +279,24 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
                     $("." + classToCheck).each(function() {
                         var offset = $(this).offset();
-                        var posLeft = offset.left - 15;
-                        var posRight = offset.left + 20;
+                        var posLeft;
+                        var posRight;
+
+                        if(classToCheck === "_event") {
+                            posLeft = offset.left - 58;
+                            posRight = offset.left + 23;
+                        }
+                        else {
+                            posLeft = offset.left - 65;
+                            posRight = offset.left + 20;
+                        }
+
 
 
                         //left side
                         if(posLeft < original_line_left) {
                             //left side minor
-                            if(classToCheck === "_axisMinor") {
+                            if(classToCheck === "_axisMinor" || classToCheck === "_event") {
                                 $(this).css("opacity", 0);
                             }
                             //left side major
@@ -158,7 +310,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                         }
                         else if(posRight > original_line_right){
                             //right side minor
-                            if(classToCheck === "_axisMinor") {
+                            if(classToCheck === "_axisMinor" || classToCheck === "_event") {
                                 $(this).css("opacity", 0);
                             }
                             //right side major
@@ -173,7 +325,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
                         if($(this).hasClass("_axis-hidden-left")) {
                             if(posLeft > original_line_left) {
-                                if(classToCheck === "_axisMinor") {
+                                if(classToCheck === "_axisMinor" || classToCheck === "_event") {
                                     $(this).css("opacity", 1);
                                 }
                                 else if (classToCheck === "_axisMajor"){
@@ -187,7 +339,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                         }
                         else if($(this).hasClass("_axis-hidden-right")) {
                             if(posRight < original_line_right) {
-                                if(classToCheck === "_axisMinor") {
+                                if(classToCheck === "_axisMinor" || classToCheck === "_event") {
                                     $(this).css("opacity", 1);
                                 }
                                 else if (classToCheck === "_axisMajor"){
@@ -241,26 +393,34 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     setEvent(curr_event, curr_color, titleOrNah);
                 };
                 var setEverythingToColors = function(color, notInit, event, duration) {
+                    animationHappening = true;
+
                     var colorShadow = "5px 5px 5px " + color[2];
                     if(notInit === "change") {
                         $( "._inner-info-container." +event ).effect("fold",{},duration/2);
                     }
+
                     setTimeout(function(){
                         if(notInit === "change") {
                             $( "._inner-info-container."+event).fadeIn(duration);
                         }
-                        $( "._inner-info-container" ).animate({
-                                backgroundColor:color[0],
-                        }, duration/2);
-                        $( "._inner-info-title-container" ).animate({
-                                backgroundColor:color[1],
+                        $( "._more-opaque-color" ).animate({
+                                backgroundColor: color[0],
                         }, duration);
-                        $( ".fa-caret-right, .fa-caret-left" ).animate({
-                                color: color[3],
+                        $( "._opaque-color" ).animate({
+                                backgroundColor: color[1],
                         }, duration);
+
+                        $( "._solid-bgcolor" ).animate({
+                                backgroundColor: color[3]
+                        }, duration);
+
+                        $( "._solid-color" ).animate({
+                                color: color[3]
+                        }, duration);
+
+                        animationHappening = false;
                     }, duration);
-
-
 
                     //title circle
                     $("._active").css("color", color[3]);
@@ -268,7 +428,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     $("._event._active").css("background-color", color[3]);
 
                     //box shadows for inner square
-                    $("._inner-info-container").css("-moz-box-shadow",colorShadow).css("-webkit-box-shadow",colorShadow).css("box-shadow",colorShadow);
+                    $("._shade-color").css("-moz-box-shadow",colorShadow).css("-webkit-box-shadow",colorShadow).css("box-shadow",colorShadow);
                 };
                 var setEvent = function(event, color, which) {
                     var duration = 750;
@@ -276,32 +436,32 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                         $(".title-icon,.title-icon-after").css("color","#000000");
                     }
 
-                    $("._active").removeClass("_active _clicked");
+                    var currSelector = "div."+event+"._event";
+
+                    if(!$(currSelector).hasClass("_clicked")) {
+                        adjustForAnimation("._active", "right", 2);
+                        $("._active").removeClass("_active _clicked");
+                    }
 
                     //if what needs to be set is not title or start
-                   if(which === "not") {
-                        $("div."+event+"._event").addClass("_clicked");
-                        setTimeout(function(){
-                            $("div."+event+"._event").addClass("_active _clicked");
-                            setEverythingToColors(curr_color, "change", event, duration);
-                        }, 100);
+                    if(which === "not") {
+                        makeEventActive(which, curr_color, currSelector,"change", event, duration);
                     }
+
+
 
                     //if what needs to be set is the title screen
                     else if(which === "title") {
-                        $(".title-icon").addClass("_clicked");
-                        setTimeout(function(){
-                            $(".title-icon").addClass("_active _clicked");
-                            $(".title-icon-after").addClass("_active _clicked");
-                            setEverythingToColors(curr_color, "change", event, duration);
-                        }, 100);
+                        makeEventActive(which, curr_color, ".title-icon","change", event, duration);
                     }
 
                     //if what needs to be set is in the beggining of the app
                     else if(which === "start") {
                         $(".title-icon").addClass("_active _clicked");
                         $(".title-icon-after").addClass("_active _clicked");
-                        setEverythingToColors(curr_color, "start", event, duration);
+                        if(!animationHappening) {
+                            setEverythingToColors(curr_color, "start", event, duration);
+                        }
                     }
 
 
@@ -331,8 +491,10 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     $("._key-color1").addClass("_active-color");
                     setEvent(curr_event, curr_color, "start");
                     hideSides(curr_side);
+                    hide_axis("_event", 200, "start");
                     hide_axis("_axisMinor", 200, "start");
                     hide_axis("_axisMajor", 200, "start");
+                    setKeyColors(colors[0][3], colors[0][2], colors[1][3], colors[1][2]);
                     didItGo = true;
                 }
 
@@ -345,7 +507,9 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     if(!$("._key-color"+curr_side).hasClass("_active-color")) {
                         $("._key-color"+curr_side).addClass("_active-color");
                         curr_color = colors[curr_side-1];
-                        setEverythingToColors(curr_color, "change", event, duration);
+                        if(!animationHappening) {
+                            setEverythingToColors(curr_color, "change", event, duration);
+                        }
                         hideSides(curr_side-1);
                         if(curr_side==="1") {
                             curr_side = "2";
@@ -375,17 +539,24 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                 });
 
                 //right button clicked
-                $('.right-control').click(function() {
+                $('._right-control').click(function() {
                     whicheventfunc("right");
                 });
 
                 //left button clicked
-                $('.left-control').click(function() {
+                $('._left-control').click(function() {
                     whicheventfunc("left");
                 });
 
-                $( "#_axis" ).draggable({ axis: "x" });
+                $( "#_axis" ).draggable({ axis: "x"});
 
+                //$("._content-container").css("height", ($("._content-container").height() + $("._axis.ui-draggable.ui-draggable-handle").height()));
+
+                $( window ).resize(function() {
+                    hide_axis("_event", 200, "update");
+                    hide_axis("_axisMinor", 200, "update");
+                    hide_axis("_axisMajor", 200, "update");
+                });
 
                 //Checks left property about twice per second
                 var watched = $("#_axis");
@@ -394,6 +565,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                   var curDisplay = watched.css("left");
 
                   if (curDisplay!=lastDisplay){
+                    hide_axis("_event", 200, "update");
                     hide_axis("_axisMinor", 200, "update");
                     hide_axis("_axisMajor", 200, "update");
                     lastDisplay = curDisplay;
@@ -409,6 +581,8 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
             [this.hexToRgbA(side2Col,0.4),this.hexToRgbA(side2Col,0.8),this.shadeColor(side2Col,-50),side2Col]
         ];
     },
+
+
       //have to error check
       //found @http://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors#answer-13542669
     shadeColor: function(color, percent) {
@@ -596,6 +770,14 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         }
         return false;
     },
+    getNearest: function(upOrDown, roundNum, num) {
+        if(upOrDown === "Down") {
+            return (num - (num % roundNum));
+        }
+        else if (upOrDown === "Up"){
+            return ((num - (num % roundNum))+roundNum);
+        }
+    },
 
     getMinAndMax: function(arr, err) {
         var dates=[];
@@ -632,12 +814,29 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
             }
         }
 
+
+
         minandmax.push(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("dddd, MMMM Do YYYY"));
         minandmax.push(moment(new Date(Math.max.apply(null,dates)), moment.ISO_8601).format("dddd, MMMM Do YYYY"));
 
+        var currNum = parseInt(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("YYYY"));
+
+
+        //console.log(parseInt(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("YYYY")));
+        //console.log(this.getNearest("Down",5,currNum));
+        //console.log(this.getNearest("Up",5,currNum));
+
+
+        minandmax.push(this.getNearest("Down",5,parseInt(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("YYYY"))));
+        minandmax.push(this.getNearest("Up",5,parseInt(moment(new Date(Math.max.apply(null,dates)), moment.ISO_8601).format("YYYY"))));
+
+        //minandmax.push(parseInt(moment(new Date(Math.max.apply(null,dates)), moment.ISO_8601).format("YYYY")) + 10);
+
         if(err) {
-            console.log("Max Date: " + minandmax[0]);
-            console.log("Min Date: " + minandmax[1]);
+            console.log("Min Date: " + minandmax[0]);
+            console.log("Max Date: " + minandmax[1]);
+            console.log("Min Date just year: " + minandmax[2]);
+            console.log("Max Date just year: " + minandmax[3]);
         }
         return minandmax;
     }
