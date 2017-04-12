@@ -1,23 +1,23 @@
   <div class="_content-container">
-    <div class="_control-section">
-        <i class="fa fa-minus _minusControl" aria-hidden="true"></i>
-        <i class="fa fa-expand _expandControl" aria-hidden="true"></i>
-    </div>
     <div class="_title-section">
+        <div class="_control-section">
+            <i class="fa fa-minus _minusControl _start_minimized" aria-hidden="true"></i>
+            <i class="fa fa-plus _expandControl _start_expanded" aria-hidden="true"></i>
+        </div>
         <h1 class="_title-of-timeline">{{json.title.text.headline}}</h1>
     </div>
-    <div class="_different-sides">
+    <div class="_different-sides _start_minimized">
         <div class="_left-control">
             <i class="fa fa-caret-left _fa-caret-left _solid-color" aria-hidden="true"></i>
         </div>
 
         <div class="_side1">
             <div class="_key-color1"></div>
-            <p class="_key-label1">{{json.title.sides.Side1.Name}}</p>
+            <p class="_key-label1">{{json.title.sides.side0.name}}</p>
         </div>
         <div class="_side2">
             <div class="_key-color2"></div>
-            <p class="_key-label2">{{json.title.sides.Side2.Name}}</p>
+            <p class="_key-label2">{{json.title.sides.side1.name}}</p>
         </div>
 
         <div class="_right-control">
@@ -25,7 +25,7 @@
         </div>
     </div>
 
-<div class="_inner-info-container _event-title _shade-color" id="_event-title">
+<div class="_inner-info-container _event-title _shade-color _start_minimized" id="_event-title">
     <div class="_inner-info-title-container _solid-bgcolor">
         <div class="_inner-info-icon-container">
             <i class="fa fa-info-circle" aria-hidden="true"></i>
@@ -53,18 +53,18 @@
         </div>
         <div class="_inner-title-facts _more-opaque-color">
             <div class="_inner-info-section1">
-                <p class="_inner-info-opinion"><b>{{json.title.sides.Side1.Name}}:</b><br> {{json.title.sides.Side1.Description}}</p>
+                <p class="_inner-info-opinion"><b>{{json.title.sides.side0.name}}:</b><br> {{json.title.sides.side0.description}}</p>
             </div>
         </div>
         <div class="_inner-title-facts _more-opaque-color">
             <div class="_inner-info-section1">
-                <p class="_inner-info-opinion"><b>{{json.title.sides.Side2.Name}}:</b><br> {{json.title.sides.Side2.Description}}</p>
+                <p class="_inner-info-opinion"><b>{{json.title.sides.side1.name}}:</b><br> {{json.title.sides.side1.description}}</p>
             </div>
         </div>
     </div>
 </div>
 {{#json.events:i }}
-<div class="_inner-info-container _event-{{i}} _shade-color" id="_event-{{i}}">
+<div class="_inner-info-container _event-{{i}} _shade-color _start_minimized" id="_event-{{i}}">
     <div class="_inner-info-title-container _solid-bgcolor">
         <div class="_inner-info-icon-container">
             <i class="fa fa-info-circle" aria-hidden="true"></i>
@@ -88,12 +88,12 @@
                 <i class="fa fa-commenting-o" aria-hidden="true"></i>
             </div>
             <div class="_inner-info-h2-container">
-                <h2 class="_inner-info-title">{{sides[h].Name}} Opinion</h2>
+                <h2 class="_inner-info-title">{{sides[h].name}} Opinion</h2>
             </div>
         </div>
         <div class="_inner-facts _more-opaque-color">
             <div class="_inner-info-section1">
-                <p class="_inner-info-opinion">{{json.events[i].text.side1}}</p>
+                <p class="_inner-info-opinion"> {{sidesText[i][h]}} </p>
             </div>
         </div>
     </div>
@@ -105,7 +105,7 @@
 <i class="fa _event-title fa-circle-o title-icon _active" aria-hidden="true"></i>
 <i class="fa _event-title fa-circle title-icon title-icon-after _active" aria-hidden="true"></i>
 
-      <div class="_axis-container">
+      <div class="_axis-container" id="_axis-container">
         <div class="_line"></div>
         <div class="_axis" id="_axis">
 
