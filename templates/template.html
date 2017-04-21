@@ -1,24 +1,71 @@
-  <div class="_content-container">
+  <div class="_content-container-omnistory">
     <div class="_title-section">
-        <div class="_control-section">
-            <i class="fa fa-minus _minusControl _start_minimized" aria-hidden="true"></i>
-            <i class="fa fa-plus _expandControl _start_expanded" aria-hidden="true"></i>
-        </div>
-        <h1 class="_title-of-timeline">{{json.title.text.headline}}</h1>
+        <h1 class="_title-of-timeline">{{{json.title.text.headline}}}</h1>
     </div>
-    <div class="_different-sides _start_minimized">
+
+      <i class="fa _event-title fa-circle-o title-icon _active" aria-hidden="true"></i>
+      <i class="fa _event-title fa-circle title-icon title-icon-after _active" aria-hidden="true"></i>
+
+      <div class="_axis-container" id="_axis-container">
+        <div class="_line"></div>
+        <div class="_axis" id="_axis">
+
+
+            <div class="_axis-container"></div>
+
+            <div class="_events">
+                {{#allEvents:k }}
+                    {{#allEvents[k][0][0][0].caption}}
+                        <div class="{{{'_eventSection'}}}">
+                            {{#allEvents[k][0]:s }}
+                                <div class="{{{'_event _event-in-section _event-' + allEvents[k][0][s][4]}}}"></div>
+                            {{/allEvents[k][0]}}
+                        </div>
+                    {{else}}
+                        <div class="{{{'_event _event-' + allEvents[k][0][4]}}}"></div>
+                    {{/allEvents[k][0][0][0].caption}}
+
+
+                {{/allEvents}}
+            </div>
+
+
+
+            {{#timelineTicks:j }}
+            <div class="_axisMajor">
+                <p class="_YearMajor">{{{timelineTicks[j][0]}}}</p>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{{timelineTicks[j][1]}}}</p>
+                </div>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{{timelineTicks[j][2]}}}</p>
+                </div>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{{timelineTicks[j][3]}}}</p>
+                </div>
+                <div class="_axisMinor">
+                    <p class="_YearMinor">'{{{timelineTicks[j][4]}}}</p>
+                </div>
+            </div>
+            {{/timelineTicks}}
+        </div>
+    </div>
+
+    <div class="_control-section">
+        <i class="fa fa-ellipsis-h _expandControl _solid-bgcolor" aria-hidden="true"></i>
+    </div>
+
+    <div class="_different-opinions _start_minimized">
         <div class="_left-control">
             <i class="fa fa-caret-left _fa-caret-left _solid-color" aria-hidden="true"></i>
         </div>
 
-        <div class="_side1">
-            <div class="_key-color1"></div>
-            <p class="_key-label1">{{json.title.sides.side0.name}}</p>
+        {{#sides:r}}
+        <div class="{{{'_stakeholders' + r + ' _stakeholder'}}}">
+            <div class="{{{'_key-color' + r + ' _key-colors'}}}"></div>
         </div>
-        <div class="_side2">
-            <div class="_key-color2"></div>
-            <p class="_key-label2">{{json.title.sides.side1.name}}</p>
-        </div>
+        {{/sides}}
+
 
         <div class="_right-control">
             <i class="fa fa-caret-right _fa-caret-right _solid-color" aria-hidden="true"></i>
@@ -31,18 +78,22 @@
             <i class="fa fa-info-circle" aria-hidden="true"></i>
         </div>
         <div class="_inner-info-h2-container">
-            <h2 class="_inner-info-title"> {{json.title.text.headline}} </h2>
+            <h2 class="_inner-info-title"> {{{json.title.text.headline}}} </h2>
         </div>
     </div>
     <div class="_inner-facts _more-opaque-color">
         <div class="_inner-info-section1">
+            <span class="_slide-img-wrapper">
+                <img src="{{{json.title.media.url}}}" alt="{{{json.title.media.caption}}}" class="_slide-img">
+                <p class="_slide-img-caption">{{{json.title.media.caption}}}</p>
+            </span>
             <span class="_date-and-facts">
-                <p class="_inner-info-date">{{range}}</p>
-                <p class="_inner-info-facts">{{json.title.text.text}}</p>
+                <p class="_inner-info-date">{{{range}}}</p>
+                <p class="_inner-info-facts">{{{json.title.text.text}}}</p>
             </span>
         </div>
     </div>
-    <div class="opinion-container-{{h}} ">
+    <div class="opinion-container- ">
         <div class="_inner-info-title-container _solid-bgcolor">
             <div class="_inner-info-icon-container">
                 <i class="fa fa-commenting-o" aria-hidden="true"></i>
@@ -51,92 +102,112 @@
                 <h2 class="_inner-info-title">Sides</h2>
             </div>
         </div>
-        <div class="_inner-title-facts _more-opaque-color">
-            <div class="_inner-info-section1">
-                <p class="_inner-info-opinion"><b>{{json.title.sides.side0.name}}:</b><br> {{json.title.sides.side0.description}}</p>
+
+        {{#json.title.sides:x}}
+        <div class="{{{'_inner-title-facts _more-opaque-color _key-color' + x}}}">
+            <div class="{{{'_inner-info-section' + x}}}">
+                <p class="_inner-info-opinion"><b>{{{json.title.sides[x].name}}}:</b><br> {{{json.title.sides[x].description}}}</p>
             </div>
         </div>
-        <div class="_inner-title-facts _more-opaque-color">
-            <div class="_inner-info-section1">
-                <p class="_inner-info-opinion"><b>{{json.title.sides.side1.name}}:</b><br> {{json.title.sides.side1.description}}</p>
-            </div>
-        </div>
+        {{/json.title.sides}}
     </div>
 </div>
-{{#json.events:i }}
-<div class="_inner-info-container _event-{{i}} _shade-color _start_minimized" id="_event-{{i}}">
-    <div class="_inner-info-title-container _solid-bgcolor">
-        <div class="_inner-info-icon-container">
-            <i class="fa fa-info-circle" aria-hidden="true"></i>
-        </div>
-        <div class="_inner-info-h2-container">
-            <h2 class="_inner-info-title"> {{json.events[i].text.headline}} </h2>
-        </div>
-    </div>
-    <div class="_inner-facts _more-opaque-color">
-        <div class="_inner-info-section1">
-            <span class="_date-and-facts">
-                <p class="_inner-info-date">Date: {{date_array[i]}}</p>
-                <p class="_inner-info-facts">{{json.events[i].text.facts}} </p>
-            </span>
-        </div>
-    </div>
-    {{#sides:h}}
-    <div class="opinion-container-{{h}} opinion">
-        <div class="_inner-info-title-container _solid-bgcolor">
-            <div class="_inner-info-icon-container">
-                <i class="fa fa-commenting-o" aria-hidden="true"></i>
-            </div>
-            <div class="_inner-info-h2-container">
-                <h2 class="_inner-info-title">{{sides[h].name}} Opinion</h2>
-            </div>
-        </div>
-        <div class="_inner-facts _more-opaque-color">
-            <div class="_inner-info-section1">
-                <p class="_inner-info-opinion"> {{sidesText[i][h]}} </p>
-            </div>
-        </div>
-    </div>
-    {{/sides}}
-</div>
-{{/json.events}}
+
+{{#allEvents:k }}
 
 
-<i class="fa _event-title fa-circle-o title-icon _active" aria-hidden="true"></i>
-<i class="fa _event-title fa-circle title-icon title-icon-after _active" aria-hidden="true"></i>
-
-      <div class="_axis-container" id="_axis-container">
-        <div class="_line"></div>
-        <div class="_axis" id="_axis">
-
-
-            <div class="_axis-container"></div>
-
-            <div class="_events">
-                {{#allEvents:k }}
-                    <div class="{{'_event _event-' + k}}">
+            {{#allEvents[k][0][0][0].caption}}
+              {{#allEvents[k][0]:i }}
+                <div class="_inner-info-container _event-{{{allEvents[k][0][i][4]}}} _shade-color _start_minimized" id="_event-{{{allEvents[k][0][i][4]}}}">
+                    <div class="_inner-info-title-container _solid-bgcolor">
+                        <div class="_inner-info-icon-container">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i>
+                        </div>
+                        <div class="_inner-info-h2-container">
+                            <h2 class="_inner-info-title"> {{{allEvents[k][0][i][2].headline}}} </h2>
+                        </div>
                     </div>
-                {{/allEvents}}
-            </div>
+                    <div class="_inner-facts _more-opaque-color">
+                        <div class="_inner-info-section1">
+                            <span class="_slide-img-wrapper">
+                                <img src="{{{allEvents[k][0][i][0].url}}}" alt="{{{allEvents[k][0][i][0].caption}}}" class="_slide-img">
+
+                                {{#allEvents[k][0][i][0].caption != " "}}
+                                    <p class="_slide-img-caption">{{{allEvents[k][0][i][0].caption}}}</p>
+                                {{/allEvents[k][0][i][0].caption}}
+                            </span>
+                            <span class="_date-and-facts">
+                                <p class="_inner-info-date">Date: {{{date_array[k][i]}}}</p>
+                                <p class="_inner-info-facts">{{{allEvents[k][0][i][2].facts}}}</p>
+                            </span>
+                        </div>
+                    </div>
+                    {{#sides:h}}
+                    <div class="opinion-container-{{{h}}} opinion">
+                        <div class="_inner-info-title-container _solid-bgcolor">
+                            <div class="_inner-info-icon-container">
+                                <i class="fa fa-commenting-o" aria-hidden="true"></i>
+                            </div>
+                            <div class="_inner-info-h2-container">
+                                <h2 class="_inner-info-title">{{{sides[h].name}}} Opinion</h2>
+                            </div>
+                        </div>
+                        <div class="_inner-facts _more-opaque-color">
+                            <div class="_inner-info-section1">
+                                <p class="_inner-info-opinion"> {{{allEvents[k][0][i][2].sides[h]}}} </p>
+                            </div>
+                        </div>
+                    </div>
+                    {{/sides}}
+                </div>
+                {{/allEvents[k][0]}}
+
+            {{else}}
+                <div class="_inner-info-container _event-{{{allEvents[k][0][4]}}} _shade-color _start_minimized" id="_event-{{{allEvents[k][0][4]}}}">
+
+                    <div class="_inner-info-title-container _solid-bgcolor">
+                        <div class="_inner-info-icon-container">
+                            <i class="fa fa-info-circle" aria-hidden="true"></i>
+                        </div>
+                        <div class="_inner-info-h2-container">
+                            <h2 class="_inner-info-title"> {{{allEvents[k][0][2].headline}}} </h2>
+                        </div>
+                    </div>
+                    <div class="_inner-facts _more-opaque-color">
+                        <div class="_inner-info-section1">
+                            <span class="_slide-img-wrapper">
+                                <img src="{{{allEvents[k][0][0].url}}}" alt="{{{allEvents[k][0][0].caption}}}" class="_slide-img">
+                                {{#allEvents[k][0][0].caption != " "}}
+                                    <p class="_slide-img-caption">{{{allEvents[k][0][0].caption}}}</p>
+                                {{/allEvents[k][0][0].caption}}
+                            </span>
+                            <span class="_date-and-facts">
+                                <p class="_inner-info-date">Date: {{{date_array[k][0]}}}</p>
+                                <p class="_inner-info-facts">{{{allEvents[k][0][2].facts}}}</p>
+                            </span>
+                        </div>
+                    </div>
+                    {{#sides:h}}
+                    <div class="opinion-container-{{{h}}} opinion">
+                        <div class="_inner-info-title-container _solid-bgcolor">
+                            <div class="_inner-info-icon-container">
+                                <i class="fa fa-commenting-o" aria-hidden="true"></i>
+                            </div>
+                            <div class="_inner-info-h2-container">
+                                <h2 class="_inner-info-title">{{{sides[h].name}}} Opinion</h2>
+                            </div>
+                        </div>
+                        <div class="_inner-facts _more-opaque-color">
+                            <div class="_inner-info-section1">
+                                <p class="_inner-info-opinion"> {{{allEvents[k][0][2].sides[h]}}} </p>
+                            </div>
+                        </div>
+                    </div>
+                    {{/sides}}
+                </div>
+            {{/allEvents[k][0][0][0].caption}}
+{{/allEvents }}
 
 
-            {{#timelineTicks:j }}
-            <div class="_axisMajor">
-                <p class="_YearMajor">{{timelineTicks[j][0]}}</p>
-                <div class="_axisMinor">
-                    <p class="_YearMinor">'{{timelineTicks[j][1]}}</p>
-                </div>
-                <div class="_axisMinor">
-                    <p class="_YearMinor">'{{timelineTicks[j][2]}}</p>
-                </div>
-                <div class="_axisMinor">
-                    <p class="_YearMinor">'{{timelineTicks[j][3]}}</p>
-                </div>
-                <div class="_axisMinor">
-                    <p class="_YearMinor">'{{timelineTicks[j][4]}}</p>
-                </div>
-            </div>
-            {{/timelineTicks}}
-        </div>
-    </div>
+
 </div>

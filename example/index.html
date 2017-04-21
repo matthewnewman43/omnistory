@@ -15,16 +15,19 @@
     var url = "http://matthewenewman.com/exampleJson.php";
 
 
-    var googleDoc = "https://docs.google.com/spreadsheets/d/1srgGHG-CqvH8vTJJAWaUjwgHsZetdacomLTdUHbcy7Q/pubhtml";
-    var googleDocRevolutionary = "https://docs.google.com/spreadsheets/d/18OXLejFUVT0-O2zSHGxTn-BXXshHbqnL6PCInJnEE2A/pubhtml";
-
+    var googleDocRevolutionary = "https://docs.google.com/spreadsheets/d/1YJqbI2Mn-zWIda9KNoND1WlCOv1TnCG702nWBbIATcQ/pubhtml";
+    var googleSample = "https://docs.google.com/spreadsheets/d/1dniZq-uUaRexq7PWVr28X4SZAS7QgJE5M78jHMG6ZhY/pubhtml";
+    var googlecopysample = "https://docs.google.com/spreadsheets/d/19TEGZsNOwja5pEbYQyIMnqbONXEpqlSWx7yteT33sIg/pubhtml";
+    var googleOfIsrael = "https://docs.google.com/spreadsheets/d/1dniZq-uUaRexq7PWVr28X4SZAS7QgJE5M78jHMG6ZhY/pubhtml";
 
     var script = document.createElement("script"), tag = document.getElementsByTagName("script")[0];
     script.src = "./../embed.min.js";
     script.id = "omnistory-widget";
     script.setAttribute('height','100');
     script.setAttribute('width','100');
-    script.setAttribute('data',googleDocRevolutionary);
+    script.setAttribute('Author-Name','Matt Newman');
+    script.setAttribute('Author-Email','newmanm6@tcnj.edu');
+    script.setAttribute('data',googleOfIsrael);
     tag.parentNode.insertBefore(script, tag);
   };
   window.addEventListener ? window.addEventListener("load", loader, false) : window.attachEvent("onload", loader);

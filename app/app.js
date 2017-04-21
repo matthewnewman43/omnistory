@@ -2,8 +2,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
   'use strict';
 
-//document.getElementById('one')
-
   var app = {
     init: function () {
 
@@ -12,27 +10,47 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
     var width = document.getElementById('omnistory-widget').getAttribute('width');
     var height = document.getElementById('omnistory-widget').getAttribute('height');
     var jsonData = document.getElementById('omnistory-widget').getAttribute('data');
+    var authName = document.getElementById('omnistory-widget').getAttribute('Author-Name');
+    var authEmail = document.getElementById('omnistory-widget').getAttribute('Author-Email');
+
+    console.log(authName);
+    console.log(authEmail);
+
     var errorChecking = false;
     var json = [];
     var dateRange;
-    var amtSides = 2;
-    var amtEvents = 8;
+    var amtSides;
+    var amtEvents;
+    var paddingForImages = 5;
 
-
-    //option to start expanded
-    //triangle and/or .. encircled
-    //make mouse over
     //swipe on mobile instead of carets
-    //put colors on title slide instead of label in side
-    //emphasize material design all the way
 
     //denotes space between the major axis'
     var spaceBetweenMajors = 150;
-    var durationOfFadeAnimations = 750;
-    var durationOfChangeEventAnimations = 800;
 
-    var sideInfo = [["American Colonists","#6891E2","The Thirteen Colonies were a group of British colonies on the east coast of North America founded in the 17th and 18th centuries that declared independence in 1776 and formed the United States. The thirteen were (roughly north to south): Province of New Hampshire, Province of Massachusetts Bay, Colony of Rhode Island and Providence Plantations, Connecticut Colony, Province of New York, Province of New Jersey, Province of Pennsylvania, Delaware Colony, Province of Maryland, Colony of Virginia, Province of North Carolina, Province of South Carolina, and Province of Georgia."],["British Empire","#CD2020","British Empire, overseas territories linked to Great Britain in a variety of constitutional relationships, established over a period of three centuries. The establishment of the empire resulted primarily from commercial and political motives and emigration movements (see imperialism); its long endurance resulted from British command of the seas and preeminence in international commerce, and from the flexibility of British rule. At its height in the late 19th and early 20th cent., the empire included territories on all continents, comprising about one quarter of the world's population and area. Probably the outstanding impact of the British Empire has been the dissemination of European ideas, particularly of British political institutions and of English as a lingua franca, throughout a large part of the world."]];
+    //adjusts speed of the animation
+    var durationOfFadeAnimations = 350;
+    var durationOfChangeEventAnimations = durationOfFadeAnimations + 50;
+    var changeAnimationInCSS = this.round(((durationOfFadeAnimations * 0.5)/349),2);
+    var durationOfShake = 500;
 
+    //controls size of the event bubble and the container for it when there is a container for the same year
+    var sizeOfEventBubble = 20;
+    var eventSameYearPadding = 6;
+    var offset = 6;
+
+
+    //enables entire application to either start collapsed or opened
+    var startCollapsed = true;
+
+    //controls the fade out of the timeline axis pieces
+    var durationOfFade = 100;
+
+    var sideInfo = [
+        ["American Colonists","#6891E2"],
+        ["British Empire","#CD2020"],
+        ["Test Colonists","#553535"]
+    ];
 
     //first array is first level
     //second array is second level
@@ -63,34 +81,37 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         alert("Not valid json or url");
     }
 
+    amtSides = Object.keys(json.title.sides).length;
+    amtEvents = Object.keys(json.events).length;
+    amtEvents = Object.keys(json.events).length;
+
     //gets min and max range for timeline scale
     var dateRange = this.getMinAndMax(json.events, errorChecking);
 
     //any variables not given in json are turned into empty strings
     //json = this.cleanUpValues(json,errorChecking,jsonLevels);
 
+    //creates object of all events
+    var allEvents = this.getAllEvents(json.events, dateRange, spaceBetweenMajors/5);
+
     //reformats all the dates to be a better format
-    var date_arr = this.reformatAllDates(json.events);
+    allEvents.push(this.reformatAllDates(allEvents[0]));
 
     //gets all the colors necessary for styling everything
     //first number is which side to choose, second is which color
     //ex [0][0] => first side's opaque color
-    var colors = this.getColors(json.title.sides.side0.color, json.title.sides.side1.color);
+    var colors = this.getColors(amtSides, json.title.sides);
 
     //creates timeline axis
     var timelineTicks = this.createTimelineTicks(dateRange);
-
-    //creates object of all events
-    var allEvents = this.getAllEvents(json.events, dateRange, spaceBetweenMajors/5);
 
     //adds css to page
     $style.text(css);
     $("head").append($style);
 
-    console.log(json);
-
     setTimeout(function(){
-          // render main view
+        console.log(json.title);
+        // render main view
           this.ractive = new Ractive({
             el: 'omnistory',
             template: template,
@@ -101,13 +122,97 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
               json: json,
               sides: json.title.sides,
               range: dateRange[0] + " - " + dateRange[1],
-              date_array: date_arr,
+              date_array: allEvents[2],
               timelineTicks: timelineTicks,
-              allEvents: allEvents[0],
-              sidesText: allEvents[1]
+              allEvents: allEvents[0]
             },
             oncomplete: function(){
-                var n = 1;
+                var setNewPositionOfAxis = function(prevEvent, newEvent, durationOfAnimation) {
+                    prevEvent = "._event-" + prevEvent;
+                    newEvent = "._event-" + newEvent;
+
+                    var prevLeft, newLeft, prevHasData=false,newHasData=false;
+                    var currPosAxis = $("._axis.ui-draggable.ui-draggable-handle").css("left");
+
+                    console.log(prevEvent);
+                    console.log(newEvent);
+
+
+                    //checks to see whether or not event is in a section or if one of the related events is a title slide
+                    if(prevEvent === "_event-title") {
+                        prevLeft=0;
+                    }
+                    else if($(prevEvent).attr("class").split(" ")[1] === "_event-in-section") {
+                        prevHasData = true;
+                    }
+                    else {
+                        prevLeft= $(prevEvent).css("left");
+                    }
+
+                    if(newEvent === "_event-title") {
+                        newLeft=0;
+                    }
+                    else if($(newEvent).attr("class").split(" ")[1] === "_event-in-section") {
+                        newHasData = true;
+                    }
+                    else {
+                        newLeft= $(newEvent).css("left");
+                    }
+
+
+                    //sets data whether in a section or not
+                    if(prevHasData) {
+                        prevLeft = $(prevEvent).data('left_pos');
+                    }
+                    else {
+                        prevLeft = parseInt(prevLeft.substring(0,prevLeft.length-2));
+                    }
+
+                    if(newHasData) {
+                        newLeft = $(newEvent).data('left_pos');
+                    }
+                    else {
+                        newLeft = parseInt(newLeft.substring(0,newLeft.length-2));
+                    }
+
+                    currPosAxis = parseInt(currPosAxis.substring(0,currPosAxis.length-2));
+
+                    var newAxisLeftPos = currPosAxis + (prevLeft-newLeft);
+
+
+                    console.log("prev")-
+                    console.log(prevLeft);
+
+                    console.log("new");
+                    console.log(newLeft);
+
+                    console.log("axis old");
+                    console.log(currPosAxis);
+
+                    console.log("difference");
+                    console.log(prevLeft - newLeft);
+
+                    console.log("axis new");
+                    console.log(newAxisLeftPos);
+
+                    $("#_axis").animate({"left":newAxisLeftPos}, durationOfAnimation)
+                }
+                //finds largest inner info container and sets the minheight to be that height (for the fact that its going to be within a page)
+                var findAndSetLargestHeight = function() {
+                    var largestHeight = 0;
+                    $("._inner-info-container").each(function() {
+                        var currHeight = $(this).height();
+                        if(currHeight > largestHeight) {
+                            largestHeight = currHeight;
+                        }
+                    });
+                    $("._content-container-omnistory._expanded").css("min-height",largestHeight);
+                }
+                var curr_side = 0;
+                var curr_color = colors[curr_side];
+                var curr_event = "_event-title";
+                var didItGo = false;
+                var eventChanging = false;
 
                 //tracks if timeline is open or closed
                 var statusOfTimeline;
@@ -116,9 +221,9 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                 var animationHappening = false;
 
                 //goes through all major and minor axis' and makes their positioning right
+                var n = 1;
                 $("._axisMajor").each(function() {
                     var currLeftPost = n*spaceBetweenMajors;
-                    console.log(currLeftPost);
                     $(this).css("left",currLeftPost);
                     var whichMinor = 1;
                     $(this).find("._axisMinor").each(function() {
@@ -136,13 +241,51 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                 var widthOfTimelineContent = parseInt(lastMinorLeft.substring(0,lastMajorLeft.length-2)) + parseInt(lastMajorLeft.substring(0,lastMajorLeft.length-2)) + 10;
                 $("#_axis").css("width",widthOfTimelineContent);
 
+                var placeEventsOnTimeline = function(setEventPositionsArr) {
+                    //variable is iterator for all the event bubbles
+                    var whichEvent = 0;
+
+                    //variable is iterator for the section arr
+                    var whichEventInSection = 0;
+                    var whichPieceOfArr = 0;
+                    var whichPieceOfEventSections=0;
+
+                    //array determines how many sections and how many events are within all the sections
+                    var eventSections = [];
+
+                    $("._eventSection").each(function() {
+                        eventSections.push($(this).children().length);
+                        var heightOfThisEventSection = ($(this).children().length * sizeOfEventBubble) + (2*eventSameYearPadding);
+                        $(this).css({"height":heightOfThisEventSection});
+                    });
+
+                    var p=0;
+                    $("._event").each(function() {
+                        if(whichEventInSection >= eventSections[whichPieceOfEventSections]) {
+                            whichEventInSection = 0;
+                            whichPieceOfArr++;
+                            whichPieceOfEventSections++;
+                        }
+                        //if this current event is a duplicate
+                        if($(this).parent().hasClass('_eventSection')) {
+
+                            var leftData = setEventPositionsArr[whichPieceOfArr][0][whichEventInSection][3];
+                            $(this).css({"left":leftData}).data('left_pos',leftData);
+                            p++;
+                            whichEventInSection++;
+                        }
+                        //else it doesn't have multiple and it can just be done simpler
+                        else {
+                            var leftData = setEventPositionsArr[whichPieceOfArr][0][3];
+                            $(this).css("left",leftData).data('left_pos',leftData);
+                            whichPieceOfArr++;
+                        }
+                        whichEvent++;
+                    });
+                }
+
                 //sets left positioning of all of the events
-                var whichEvent = 0;
-                $("._event").each(function() {
-                    $(this).css("left",allEvents[0][whichEvent][3]);
-                    //console.log(allEvents[whichEvent][3]);
-                    whichEvent++;
-                });
+                placeEventsOnTimeline(allEvents[0]);
 
                 var makeEventActive = function(titleOrNormal,curr_color, makeEventActiveSelector, which, event, duration) {
                     if($("._event._active").css("left")) {
@@ -156,6 +299,17 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
                     $(makeEventActiveSelector).addClass("_clicked");
                     setTimeout(function(){
+                        //checks to see if the upcoming event is in a section of events and if it isn't then it closes but if it is it opens that section
+                        if($(makeEventActiveSelector).attr("class").split(' ').indexOf("_event-in-section") > 0 && $(makeEventActiveSelector).attr("class").split(' ').indexOf("_opened-event") < 0) {
+                            closeOpenedSameYearContainer();
+                            openEventSection(makeEventActiveSelector, sizeOfEventBubble, eventSameYearPadding);
+                        }
+                        else if($(makeEventActiveSelector).attr("class").split(' ').indexOf("_event-in-section") > 0 && $(makeEventActiveSelector).attr("class").split(' ').indexOf("_opened-event") > 0){
+                        }
+                        else {
+                            closeOpenedSameYearContainer();
+                        }
+
                         $(makeEventActiveSelector).addClass("_active _clicked");
 
                         //moves event bubble over 2 px to account for the change of size
@@ -184,28 +338,26 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     if(leftOrRight === "left") {
                         var oldLeft = parseInt($(selector).css("left").substr(0,$(selector).css("left").length-2));
                         var newLeftPost = oldLeft - amt;
-                        //console.log("Old: " + oldLeft);
-                        //console.log(newLeftPost + "px");
                         $(selector).css("left",newLeftPost);
                     }
                     else if(leftOrRight === "right") {
                         var oldLeft = parseInt($(selector).css("left").substr(0,$(selector).css("left").length-2));
                         var newLeftPost = oldLeft + amt;
-                        //console.log("Old: " + oldLeft);
-                        //console.log(newLeftPost + "px");
                         $(selector).css("left",newLeftPost);
                     }
                 }
 
                 //sets the colors for the keys
-                var setKeyColors = function(color1, color1Shadow, color2, color2Shadow) {
-                    $("._key-color1").css("background-color", color1);
-                    $("._key-color2").css("background-color", color2);
+                var setKeyColors = function(colors) {
+                    var i=0;
+                    $("._key-colors").each(function() {
+                        $("._key-colorside" + i).css("background-color", colors[i]);
+                        i++;
+                    });
                 };
 
-
                 //hides elements that go beyond certain point to the right and left of the axis
-                var hide_axis = function(classToCheck, durationOfFade, startOrNah) {
+                var hide_axis = function(classToCheck, startOrNah) {
                     var original_line_left = $("._line").offset().left;
                     var original_line_right = original_line_left + $("._line").width();
 
@@ -216,14 +368,12 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
                         if(classToCheck === "_event") {
                             posLeft = offset.left - 58;
-                            posRight = offset.left + 23;
+                            posRight = offset.left + 63;
                         }
                         else {
                             posLeft = offset.left - 65;
-                            posRight = offset.left + 20;
+                            posRight = offset.left + 60;
                         }
-
-
 
                         //left side
                         if(posLeft < original_line_left) {
@@ -287,42 +437,62 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                 };
 
                 var whicheventfunc = function(which) {
+                    var textBeforeNum = curr_event.substr(0,curr_event.indexOf("-")+1);
                     var whichevent = curr_event.substr(curr_event.indexOf("-")+1,curr_event.length);
-                    var titleOrNah;
-                    if(which==="left") {
-                        if(whichevent === "title") {
-                            curr_event = curr_event;
-                            titleOrNah = "title";
+                    var tryingToGoTo;
+
+                    if(which === "left") {
+                        if(whichevent == 0) {
+                            tryingToGoTo = "title";
                         }
-                        else if(whichevent === "0" || whichevent === 0) {
-                            curr_event = curr_event.substr(0,curr_event.indexOf("-")+1) + "title";
-                            if(curr_event === "_event-title") {
+                        else {
+                            tryingToGoTo = parseInt(whichevent) - 1;
+                        }
+                    }
+                    else if(which === "right"){
+                        if(whichevent === "title") {
+                            tryingToGoTo = 0;
+                        }
+                        else {
+                            tryingToGoTo = parseInt(whichevent) + 1;
+                        }
+                    }
+                    if(tryingToGoTo <= amtEvents-1 || tryingToGoTo === "title") {
+                        var titleOrNah;
+                        if(which==="left") {
+                            if(whichevent === "title") {
+                                curr_event = curr_event;
                                 titleOrNah = "title";
                             }
+                            else if(whichevent === "0" || whichevent === 0) {
+                                curr_event = textBeforeNum + "title";
+                                if(curr_event === "_event-title") {
+                                    titleOrNah = "title";
+                                }
+                                else {
+                                    titleOrNah = "not";
+                                }
+                            }
                             else {
+                                curr_event = textBeforeNum + tryingToGoTo;
                                 titleOrNah = "not";
                             }
                         }
-                        else {
-                            whichevent = parseInt(whichevent) - 1;
-                            curr_event = curr_event.substr(0,curr_event.indexOf("-")+1) + whichevent;
+                        else if(which==="right") {
+                            if(whichevent === "title") {
+                                curr_event = textBeforeNum + 0;
+                            }
+                            else {
+                                curr_event = textBeforeNum + tryingToGoTo;
+                            }
                             titleOrNah = "not";
                         }
+                        setNewPositionOfAxis(whichevent,tryingToGoTo,500);
+                        setEvent(curr_event, curr_color, titleOrNah, durationOfFadeAnimations , durationOfChangeEventAnimations);
                     }
-                    else if(which==="right") {
-                        if(whichevent === "title") {
-                            curr_event = curr_event.substr(0,curr_event.indexOf("-")+1) + 0;
-                        }
-                        else if(whichevent >= $("._event").length+1) {
-                            curr_event = curr_event;
-                        }
-                        else {
-                            whichevent = parseInt(whichevent) + 1;
-                            curr_event = curr_event.substr(0,curr_event.indexOf("-")+1) + whichevent;
-                        }
-                        titleOrNah = "not";
+                    else {
+                        shakeEventSlide();
                     }
-                    setEvent(curr_event, curr_color, titleOrNah, durationOfFadeAnimations , durationOfChangeEventAnimations);
                 };
 
 
@@ -330,7 +500,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                 var setEverythingToColors = function(color, notInit, event, duration) {
                     animationHappening = true;
 
-                    var colorShadow = "5px 5px 5px " + color[2];
+                    var colorShadow = "0px 5px 10px " + color[2];
 
                     setTimeout(function(){
                         if(notInit === "change") {
@@ -350,17 +520,23 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                         $( "._solid-color" ).animate({
                                 color: color[3]
                         }, duration);
-
-                        animationHappening = false;
                     }, duration);
+
+
 
                     //title circle
                     $("._active").css("color", color[3]);
                     //event circles
-                    $("._event._active").css("background-color", color[3]);
+                    $( "._event._active" ).animate({
+                            "background-color": color[3]
+                    }, duration/3);
 
                     //box shadows for inner square
                     $("._shade-color").css("-moz-box-shadow",colorShadow).css("-webkit-box-shadow",colorShadow).css("box-shadow",colorShadow);
+
+                    setTimeout(function() {
+                        animationHappening = false;
+                    }, (duration*2)+150)
                 };
 
 
@@ -378,6 +554,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
 
                                 setTimeout(function() {
+                                    setCaptionAndImgResize(paddingForImages);
                                     $("._animated-in-left").removeClass("_animated-in-left");
                                 }, durationOfChangeEventAnimations);
                             }, durationOfChangeEventAnimations);
@@ -393,6 +570,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
 
                                 setTimeout(function() {
+                                    setCaptionAndImgResize(paddingForImages);
                                     $("._animated-out-right").removeClass("_animated-out-right");
                                 }, durationOfChangeEventAnimations);
                             }, durationOfChangeEventAnimations);
@@ -421,7 +599,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                         //sets all events that weren't selected to be black
                         $("div:not(."+event+")._event").css("background-color","#000000");
 
-
                        //if what needs to be set is not title or start
                         if(which === "not") {
                             makeEventActive(which, curr_color, currSelector,"change", event, duration);
@@ -435,7 +612,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                         //if what needs to be set is in the beginning of the app
                         else if(which === "start") {
                             $(".title-icon").addClass("_active _clicked");
-                            $(".title-icon-after").addClass("_active _clicked");
                             if(!animationHappening) {
                                 setEverythingToColors(curr_color, "start", event, duration);
                             }
@@ -450,14 +626,10 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     var currSelector = "div."+event+"._event";
 
                     if(which != "start") {
-                        console.log(event);
-
                         var newEvent = event.substr(event.search("-")+1,event.length);
                         var prevEventPre = $("._active-event").attr("class").split(' ')[1];
                         var prevEvent = prevEventPre.substr(prevEventPre.search("-")+1,prevEventPre.length);
 
-                        console.log(newEvent);
-                        console.log(prevEvent);
                         if((prevEvent === "title" && newEvent != "title") || (parseInt(newEvent) > parseInt(prevEvent))) {
                             setEventInfo(event, color, which, currSelector, durationOfChangeEventAnimations, "left");
                             setEventBubble(event, color, which, currSelector, durationOfFadeAnimations);
@@ -473,96 +645,204 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                     }
                 };
 
-
                 //takes in number of side, hides the other side and shows the current one
                 var hideSides = function(side) {
                     $("div:not(.opinion-container-side"+side+").opinion").hide();
                     $("div.opinion-container-side" + side + ".opinion").show();
                 };
 
-                //initializations for the app to begin
-                var curr_side = 0;
-                var curr_color = colors[curr_side];
-                var curr_event = "_event-title";
-                var didItGo = false;
-
 
 
                 //expands all elements of the timeline that are hidden
                 var expandTimeline = function() {
-                    $("._start_minimized._active-event").show();
-                    $("._start_minimized._different-sides").show();
-                    $("._start_expanded").hide();
-                    $("._start_minimized._minusControl").show();
+                    $("._content-container-omnistory").addClass("_expanded");
+                    //figures out min-height (height of largest inner container)
+                    findAndSetLargestHeight();
 
+                    setTimeout(function() {
+                        $("._slide-img-caption").show();
+                    }, 200);
+
+                    $("._expandControl").addClass("_expand-control").removeClass("_collapse-control");
+
+                    if($("._active-event").attr("class").split(" ")[1] === "_event-title") {
+                        console.log("did it work");
+                        setCaptionAndImgResize(paddingForImages);
+                    }
+                    $("._start_minimized._active-event").slideDown();
+                    $("._start_minimized._different-opinions").slideDown();
+                    $("._start_expanded").hide();
                     statusOfTimeline = "expanded";
                 }
-
                 //closes all elements of the timeline that should be hidden
-                var collapseTimeline = function() {
-                    $("._start_minimized").hide();
+                var collapseTimeline = function(which) {
+                    $("._content-container-omnistory").removeClass("_expanded").css("min-height",0);
+
+                    setTimeout(function() {
+                        $("._slide-img-caption").hide();
+                    }, 200);
+
+                    //if its not the initial start, create slide effect otherwise just hide it for the start
+                    if(which != "start") {
+                        $("._start_minimized").slideUp();
+                        $("._expandControl").addClass("_collapse-control").removeClass("_expand-control");
+                    }
+                    else {
+                        $("._start_minimized").hide();
+                    }
                     $("._start_expanded").show();
 
                     statusOfTimeline = "collapsed";
                 }
 
+
+
+                /* code based on http://stackoverflow.com/questions/30074246/how-to-create-ripple-effect-on-click-material-design*/
+                var clickAnimation = function(that, e, which) {
+                    // Remove any old one
+                      $(".ripple").remove();
+
+                      // Setup
+                      var posX = $(that).offset().left,
+                          posY = $(that).offset().top,
+                          buttonWidth = $(that).width(),
+                          buttonHeight =  $(that).height();
+
+                    if(which === "key") {
+                        posX = $(that).offset().left + parseInt($(that).css("padding-left").substr(0,$(that).css("padding-left").length -2));
+                        posY = $(that).offset().top;
+                        buttonWidth = $(that).find("._key-colors").width();
+                        buttonHeight =  $(that).find("._key-colors").height();
+                    }
+
+
+
+                      $(that).prepend("<span class='ripple'></span>");
+
+                     // Make it round!
+                      if(buttonWidth >= buttonHeight) {
+                        buttonHeight = buttonWidth;
+                      } else {
+                        buttonWidth = buttonHeight;
+                      }
+
+
+
+                      // Get the center of the element
+                      var x;
+                      var y;
+
+                        if(which === "key") {
+                          x = (e.pageX - buttonWidth / 2);
+                          y = (e.pageY - buttonHeight / 2);
+                        }
+                        else {
+                            x = (e.pageX - posX) - (buttonWidth / 2);
+                            y = (e.pageY - posY) - (buttonHeight / 2);
+                        }
+
+                      $(".ripple").css({
+                        width: buttonWidth,
+                        height: buttonHeight,
+                        top: y + 'px',
+                        left: x + 'px'
+                      }).addClass("rippleEffect");
+                    };
+
+                //goes through all of the image stuff and sets the caption underneath it properly and sets the credit at the bottom of the img
+                var setCaptionAndImgResize = function(padding) {
+                        var event =  $("._active-event").attr("class").split(" ")[1];
+
+                        var currentImg = $("." + event + " ._slide-img-wrapper").find("._slide-img");
+                        var currentCaption = $("." + event + " ._slide-img-wrapper").find("._slide-img-caption");
+                        var section_container = $("." + event + " ._slide-img-wrapper").closest("._inner-facts");
+
+
+                        var newWidth = (section_container.width()*0.2);
+                        var sizeOfContainer = section_container.height() + parseInt(section_container.css("padding").substring(0,section_container.css("padding").length-2));
+
+                        if(currentImg.height() > sizeOfContainer) {
+                            section_container.height(currentImg.height() + padding);
+
+                        }
+                        currentCaption.css({"width":newWidth,"padding":padding});
+                }
+
+                var shakeEventSlide = function(event) {
+                    if(event) {
+                        $( "._inner-info-container." +event).effect("shake",{distance: 8},durationOfShake/2);
+                    }
+                    else {
+                        var event = $("._active-event").attr('class').split(" ")[1];
+                        $( "._inner-info-container." + event).effect("shake",{distance: 8},durationOfShake/2);
+                    }
+                }
+
                 //sets up app to start off properly
                 if(!didItGo) {
                     //sets event to be the title slide
-                    setEvent(curr_event, curr_color, "start", durationOfFadeAnimations , durationOfChangeEventAnimations);
+                    setEvent(curr_event, curr_color, "start", durationOfFadeAnimations, durationOfChangeEventAnimations);
 
                     //hides the second opinion on initial start of app
                     hideSides(curr_side);
 
                     //hides all elements on the axis that are below or above the threshold
-                    hide_axis("_event", 200, "start");
-                    hide_axis("_axisMinor", 200, "start");
-                    hide_axis("_axisMajor", 200, "start");
+                    hide_axis("_event", "start");
+                    hide_axis("_axisMinor", "start");
+                    hide_axis("_axisMajor", "start");
 
                     //set the keys for different sides based on the colors provided in data
-                    setKeyColors(colors[0][3], colors[0][2], colors[1][3], colors[1][2]);
+                    var colorsForKeys = [];
+                    for(var i=0;i<amtSides;i++) {
+                        colorsForKeys.push(colors[i][3]);
+                    }
+                    setKeyColors(colorsForKeys);
                     $("._key-color1").addClass("_active-color");
 
                     //hides elements that can save space right after load
-                    collapseTimeline();
+                    if(startCollapsed) {
+                        collapseTimeline("start");
+                    }
 
                     //tells app that it is done setting up
                     didItGo = true;
                 }
 
                 //if plus or minus control is clicked, expand or collapse accordingly
-                $("._minusControl, ._expandControl").click(function() {
+                $("._expandControl").click(function(e) {
+                    var that = this;
+
                     if(statusOfTimeline === "collapsed") {
+                        clickAnimation(that, e);
                         expandTimeline();
                     }
                     else if(statusOfTimeline === "expanded") {
+                        clickAnimation(that, e);
                         collapseTimeline();
                     }
                 });
 
                 //if the legend is clicked
-                $('div[class ^= _side]').click(function() {
-                    curr_side = this.classList[0][5];
-                    var event = $("._active-event").attr('class').split(" ")[1];
-                    var duration = 500;
+                $('div[class ^= _stakeholder]').click(function(e) {
+                    var that = this;
+                    clickAnimation(that, e, "key");
 
-                    if(!$("._key-color"+curr_side).hasClass("_active-color")) {
-                        $("._key-color"+curr_side).addClass("_active-color");
-                        curr_color = colors[curr_side-1];
+
+                    curr_side = this.classList[0][17];
+                    var event = $("._active-event").attr('class').split(" ")[1];
+                    var durationOfColorChange = 500;
+
+                    if(!$("._key-colorside"+curr_side).hasClass("_active-color")) {
+                        $("._key-colorside"+curr_side).addClass("_active-color");
+                        curr_color = colors[curr_side];
                         if(!animationHappening) {
-                            setEverythingToColors(curr_color, "change", event, duration);
+                            setEverythingToColors(curr_color, "change", event, durationOfColorChange);
                         }
-                        hideSides(curr_side - 1);
-                        if(curr_side==="1") {
-                            curr_side = "2";
-                        }
-                        else {
-                            curr_side = "1";
-                        }
-                        $("._key-color"+curr_side).removeClass("_active-color");
+                        hideSides(curr_side);
+                        $("div:not(._key-colorside"+curr_side+")").removeClass("_active-color");
                     }
                     else {
-                        $( "._inner-info-container." +event).effect("shake",{distance: 8},duration/2);
+                        shakeEventSlide(event);
                     }
                 });
 
@@ -574,20 +854,100 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
 
                 //if one of the circles on the timeline are clicked
-                $('div._event').click(function() {
+                $('div._event:not("._event-in-section")').click(function() {
                     //changes current event to one that was clicked on
-                    curr_event = this.classList[1];
+                    if(this.classList[1] === "_event-in-section") {
+                        curr_event = this.classList[2];
+                    }
+                    else {
+                        curr_event = this.classList[1];
+                    }
+
+                    //if a container is open with multiple events, close it
+                    closeOpenedSameYearContainer();
                     setEvent(curr_event, curr_color, "not", durationOfFadeAnimations , durationOfChangeEventAnimations);
                 });
 
+                $('div._eventSection ._event._event-in-section:not("._opened-event")').click(function() {
+                    var currentClickedClasses = $(this).attr("class").split(' ');
+                    if(!currentClickedClasses[3]) {
+                        closeOpenedSameYearContainer();
+                        //changes current event to one that was clicked on
+                        var that = this;
+                        openEventSection(that, sizeOfEventBubble, eventSameYearPadding);
+                    }
+                    else {
+                        setEvent(currentClickedClasses[2], curr_color, "not", durationOfFadeAnimations, durationOfChangeEventAnimations);
+                    }
+                });
+
+                var closeOpenedSameYearContainer = function() {
+                    if($("._eventSection._clicked")[0]) {
+
+                        $("._eventSection._clicked ._event-in-section").each(function() {
+                            var leftForEvents = $(this).data('left_pos');
+
+                            if($(this).attr("class").split(' ').indexOf("_active") > 0) {
+                                leftForEvents = leftForEvents - 2;
+                            }
+                            $(this).css({"left":leftForEvents}).animate({"top":"0","margin-top":0}, 500).addClass("_closingEverything");
+                        });
+
+                            setTimeout(function() {
+                                $("._closingEverything").removeClass("_closingEverything");
+                            }, 500);
+
+                        $("._eventSection._clicked").removeClass("_clicked");
+                        $("._event-in-section._opened-event").removeClass("_opened-event");
+                    }
+                }
+
+                var openEventSection = function(that, sizeOfEventBubble, eventSameYearPadding) {
+                    var whichEvent = 0;
+
+                    var leftForSection = parseFloat($(that).css("left").substring(0,$(that).css("left").length-2)) - offset;
+
+                    if(parseFloat($(that).css("left").substring(0,$(that).css("left").length-2)) % 5) {
+                        //leftForSection = leftForSection - 1;
+                    }
+
+                    $(that).parent().css({"left":leftForSection,"padding-bottom":eventSameYearPadding}).addClass("_clicked");
+
+                    $("._eventSection._clicked ._event-in-section").each(function() {
+                        var heightForIndividualEvents = (whichEvent * sizeOfEventBubble)+((eventSameYearPadding) + (1*whichEvent));
+                        var marginTop = whichEvent*2.5;
+
+                        $(this).css({"top":heightForIndividualEvents,"margin-top":marginTop,"left":offset}).addClass("_opened-event");
+                        whichEvent++;
+                    });
+                }
+
                 //right button clicked
                 $('._right-control').click(function() {
-                    whicheventfunc("right");
+                    //if event is not currently changing then start the process to change the event
+                    if(!eventChanging) {
+                        eventChanging = true;
+                        whicheventfunc("right");
+                    }
+
+                    //waits about how long it takes for the change of event plus a little extra
+                    setTimeout(function() {
+                        eventChanging = false;
+                    },(durationOfChangeEventAnimations*2)+150)
                 });
 
                 //left button clicked
                 $('._left-control').click(function() {
-                    whicheventfunc("left");
+                    //if event is not currently changing then start the process to change the event
+                    if(!eventChanging) {
+                        eventChanging = true;
+                        whicheventfunc("left");
+                    }
+
+                    //waits about how long it takes for the change of event plus a little extra
+                    setTimeout(function() {
+                        eventChanging = false;
+                    },(durationOfChangeEventAnimations*2)+150)
                 });
 
                 $( "#_axis" ).draggable({ axis: "x", scroll:false});
@@ -596,9 +956,9 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
                 //if window is getting resized update which axis should be hidden
                 $( window ).resize(function() {
-                    hide_axis("_event", 100, "update");
-                    hide_axis("_axisMinor", 100, "update");
-                    hide_axis("_axisMajor", 100, "update");
+                    hide_axis("_event", "update");
+                    hide_axis("_axisMinor", "update");
+                    hide_axis("_axisMajor", "update");
                 });
 
                 //Checks left property about twice per second
@@ -608,21 +968,29 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                   var curDisplay = watched.css("left");
 
                   if (curDisplay!=lastDisplay){
-                    hide_axis("_event", 100, "update");
-                    hide_axis("_axisMinor", 100, "update");
-                    hide_axis("_axisMajor", 100, "update");
+                    hide_axis("_event", "update");
+                    hide_axis("_axisMinor", "update");
+                    hide_axis("_axisMajor", "update");
                     lastDisplay = curDisplay;
                   }
                 },200);
             }
           });
-      }, 500);
+      }, 200);
     },
-    getColors: function(side1Col, side2Col) {
-        return [
-            [this.hexToRgbA(side1Col,0.4),this.hexToRgbA(side1Col,0.8),this.shadeColor(side1Col,-50),side1Col],
-            [this.hexToRgbA(side2Col,0.4),this.hexToRgbA(side2Col,0.8),this.shadeColor(side2Col,-50),side2Col]
-        ];
+    getColors: function(amtSides, sidesArr) {
+        var colors = [];
+        for(var j=0;j<amtSides;j++) {
+            var newColors = [];
+            var currColor = sidesArr["side" + j].color;
+            newColors.push(this.hexToRgbA(currColor,0.4));
+            newColors.push(this.hexToRgbA(currColor,0.8));
+            newColors.push(this.shadeColor(currColor,-50));
+            newColors.push(currColor);
+            colors.push(newColors)
+        }
+
+        return colors;
     },
 
 
@@ -663,10 +1031,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         throw new Error('Bad Hex');
     },
     cleanUpValues: function(funcData, err, data) {
-
-        //console.log(funcData);
-        //console.log(data);
-
         for(var key in data) {
             var nameOfFirstLevel = key;
             var first = data[key];
@@ -738,8 +1102,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                             if(sizeOfCurrentSecondLevelArr < sizeOfProperSecondLevelArr) {
 
                                 sizeOfThirdLevel = thirdData.length;
-
-
                                for(var s=0;s<sizeOfThirdLevel;s++) {
                                     var curr = thirdData[s];
                                     if(currentSecondLevelExists.indexOf(curr) === -1) {
@@ -800,6 +1162,7 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         var amtOfSides = gss.titles.length - 11;
         var amtOfEvents = gss.contents.length - 1;
 
+
         var newJson = this.establishProperStructure(amtOfSides, amtOfEvents);
 
         if(err) {
@@ -811,7 +1174,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         for(var col = 0;col<gss.contents.length;col++) {
             var currRow = gss.contents[col];
 
-            //console.log(currRow);
             if(col===0) {
                 newJson.title.media.url = currRow[8];
                 newJson.title.media.caption = currRow[10];
@@ -821,19 +1183,22 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
                 newJson.title.text.text = currRow[7];
 
                 for(var h=0;h<amtOfSides;h++) {
+                    var whichSide = 11+h;
                     newJson.title.sides["side" + h].name = sideInfo[h][0];
                     newJson.title.sides["side" + h].color = sideInfo[h][1];
-                    newJson.title.sides["side" + h].description = sideInfo[h][2];
+                    newJson.title.sides["side" + h].description = currRow[whichSide];
                 }
             }
             else {
+                //sets values of the new json to current event
+                //substracts 1 to account for the title slide
                 newJson.events[col-1].start_date.year = currRow[0];
                 newJson.events[col-1].start_date.month = currRow[1];
                 newJson.events[col-1].start_date.day = currRow[2];
 
                 newJson.events[col-1].media.url = currRow[8];
-                newJson.events[col-1].media.credit = currRow[10];
-                newJson.events[col-1].media.caption = currRow[9];
+                newJson.events[col-1].media.credit = currRow[9];
+                newJson.events[col-1].media.caption = currRow[10];
 
                 newJson.events[col-1].text.headline = currRow[6];
                 newJson.events[col-1].text.facts = currRow[7];
@@ -968,46 +1333,123 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
     },
 
     getAllEvents: function(eventObj, range, howFarTicksApart) {
-        var allEvents = [];
+        var allEventsArr = [];
         var events = [];
         var sides = [];
-        var numEvents;
+        var eventCount = 0;
 
-        if(typeof(eventObj) === 'object') {
-            numEvents = Object.keys(eventObj).length;
-        }
-        else {
-            numEvents = eventObj.length
-        }
+        eventObj = this.checkAllEventsForSameYear(eventObj);
+        eventObj = this.sortPropertiesByObj(eventObj,true,false);
+
+
+        var numEvents = eventObj.length;
+
+        var eventNum = 0;
+
         for(var i=0;i<numEvents;i++) {
+            var tmpArr = []
             var currEvent = [];
-            currEvent.push(eventObj[i].media);
-            currEvent.push(eventObj[i].start_date);
-            currEvent.push(eventObj[i].text);
-
-            sides.push(eventObj[i].text.sides);
-
-            var yearDifference = eventObj[i].start_date.year - range[2];
-            var offset;
-
-
-            if(yearDifference % 5 === 0) {
-                offset = ((10*howFarTicksApart)-7) + 2.5;
+            var currSide = [];
+            if(eventObj[i][1].length > 1) {
+                for(var n=0;n<eventObj[i][1].length;n++) {
+                    currSide.push(this.getEventsAndPushToArr(eventObj[i][1][n],range,howFarTicksApart, eventNum));
+                    sides.push(this.getSidesAndPushToArr(eventObj[i][1][n],range,howFarTicksApart));
+                    eventNum++;
+                }
+                tmpArr.push(currSide);
             }
             else {
-                offset = (10*howFarTicksApart)-7;
+                tmpArr.push(this.getEventsAndPushToArr(eventObj[i][1][0],range,howFarTicksApart, eventNum));
+                sides.push(this.getSidesAndPushToArr(eventObj[i][1][0],range,howFarTicksApart));
+                eventNum++;
             }
-
-            var ticksAfterMin = (yearDifference * howFarTicksApart)+offset;
-            currEvent.push(ticksAfterMin);
-            events.push(currEvent);
+            events.push(tmpArr);
         }
-        allEvents.push(events);
-        allEvents.push(sides);
+        allEventsArr.push(events);
+        allEventsArr.push(sides);
 
-        return allEvents;
+        return allEventsArr;
     },
 
+
+    getEventsAndPushToArr: function(obj, range, howFarTicksApart, eventCount) {
+        var currEvent = [];
+        currEvent.push(obj.media);
+        currEvent.push(obj.start_date);
+        currEvent.push(obj.text);
+
+
+        var yearDifference = obj.start_date.year - range[2];
+        var offset;
+
+
+        if(yearDifference % 5 === 0) {
+            offset = ((10*howFarTicksApart)-7) + 2.5;
+        }
+        else {
+            offset = (10*howFarTicksApart)-7;
+        }
+
+        var ticksAfterMin = (yearDifference * howFarTicksApart)+offset;
+        currEvent.push(ticksAfterMin);
+        currEvent.push(eventCount);
+        return currEvent;
+    },
+
+    getSidesAndPushToArr: function(obj, range, howFarTicksApart) {
+        var sides = [];
+        for(var i=0;i<Object.keys(obj.text.sides).length;i++) {
+            sides.push(obj.text.sides['side' + i]);
+        }
+        return sides;
+    },
+
+    //goes through all of the events and puts it into a format that can then show duplicate years
+    checkAllEventsForSameYear: function(oldEvents) {
+        var newEvents = [];
+        var yearsWithRepetition = [];
+        var allYears = [];
+
+        //turns object into array to be worked with
+        oldEvents = Object.keys(oldEvents).map(function (key) { return oldEvents[key]; });
+
+        //figures out which events have duplicates
+        for(var i=0;i<Object.keys(oldEvents).length;i++) {
+            var currEvent = oldEvents[i]["start_date"]["year"];
+
+            if($.inArray(currEvent, allYears) >= 0) {
+                if($.inArray(currEvent, yearsWithRepetition) < 0) {
+                    yearsWithRepetition.push(currEvent);
+                }
+            }
+            else {
+                allYears.push(currEvent);
+            }
+        }
+
+        //goes through all the years with duplicates and adds them to final array
+        for(var h=0;h<yearsWithRepetition.length;h++) {
+            var arrToHoldRepetitions = [];
+
+            for(var j=0;j<Object.keys(oldEvents).length;j++) {
+                if(oldEvents[j]["start_date"]["year"] === yearsWithRepetition[h]) {
+                    arrToHoldRepetitions.push(oldEvents[j]);
+                    oldEvents[j].isDuplicate = "duplicate";
+                }
+            }
+
+            allYears.splice( $.inArray(yearsWithRepetition[h],allYears),1);
+            newEvents.push(arrToHoldRepetitions);
+        }
+
+        for(var k=0;k<Object.keys(oldEvents).length;k++) {
+            if(oldEvents[k].isDuplicate != "duplicate") {
+                newEvents.push([oldEvents[k]]);
+            }
+        }
+
+        return newEvents;
+    },
 
     //makes the labels for the timeline axis
     createTimelineTicks: function(range) {
@@ -1028,6 +1470,9 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
     //reformats all of the dates using moment
     reformatAllDates: function (eventObj) {
         var numEvents;
+        var day;
+        var month;
+        var year;
 
         if(typeof(eventObj) === 'object') {
             numEvents = Object.keys(eventObj).length;
@@ -1037,62 +1482,88 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
         }
 
         var dates = [];
+        var tmpDates = [];
         for(var j=0;j<numEvents;j++) {
-            var formatted_date;
-
-            var day = eventObj[j].start_date.day;
-            var month = eventObj[j].start_date.month;
-            var year = eventObj[j].start_date.year;
-
-            var date = year;
-            var perfect_date = "y";
-
-            if(month == null || !Number.isInteger(parseInt(month))) {
-            }
-            else if(month === "00") {
-                date += "/01";
-                perfect_date += "m";
-            }
-            else if(month < 10 && month != "00") {
-                date += "/0" + month;
-                perfect_date += "m";
+            tmpDates = [];
+            if(!Number.isInteger(eventObj[j][0][3])) {
+                for(var i=0;i<eventObj[j][0].length;i++) {
+                    if (typeof eventObj[j][0][i][1]  !== "undefined" && eventObj[j][0][i][1]) {
+                        day = eventObj[j][0][i][1].day;
+                        month = eventObj[j][0][i][1].month;
+                        year = eventObj[j][0][i][1].year;
+                    }
+                    else {
+                        day = eventObj[j][0][1].day;
+                        month = eventObj[j][0][1].month;
+                        year = eventObj[j][0][1].year;
+                    }
+                    tmpDates.push(this.formatDate(day, month, year));
+                }
             }
             else {
-                date += "/" + month;
-                perfect_date += "m";
+                day = eventObj[j][0][1].day;
+                month = eventObj[j][0][1].month;
+                year = eventObj[j][0][1].year;
+                tmpDates.push(this.formatDate(day, month, year));
             }
-
-
-            if(day == null || !Number.isInteger(parseInt(day))) {
-            }
-            else if(day === "00") {
-                date += "/01";
-                perfect_date += "d";
-            }
-            else if(day < 10 && day != "00") {
-                date += "/0" + day;
-                perfect_date += "d";
-            }
-            else {
-                date += "/" + day;
-                perfect_date += "d";
-            }
-
-            if(perfect_date === "ymd") {
-                formatted_date = moment(new Date(date), moment.ISO_8601).format("dddd, MMMM Do YYYY");
-            }
-            else if(perfect_date === "ym") {
-                formatted_date = moment(new Date(date), moment.ISO_8601).format("MMMM, YYYY");
-            }
-            else {
-                formatted_date = year;
-            }
-
-            dates.push(formatted_date);
+            dates.push(tmpDates);
         }
         return dates;
     },
 
+    formatDate: function(day, month, year) {
+        var formatted_date;
+
+        var date = year;
+        var perfect_date = "y";
+
+        if(month == null || !Number.isInteger(parseInt(month))) {
+        }
+        else if(month === "00") {
+            date += "/01";
+            perfect_date += "m";
+        }
+        else if(month < 10 && month != "00") {
+            date += "/0" + month;
+            perfect_date += "m";
+        }
+        else {
+            date += "/" + month;
+            perfect_date += "m";
+        }
+
+
+        if(day == null || !Number.isInteger(parseInt(day))) {
+        }
+        else if(day === "00") {
+            date += "/01";
+            perfect_date += "d";
+        }
+        else if(day < 10 && day != "00") {
+            date += "/0" + day;
+            perfect_date += "d";
+        }
+        else {
+            date += "/" + day;
+            perfect_date += "d";
+        }
+
+        if(perfect_date === "ymd") {
+            formatted_date = moment(new Date(date), moment.ISO_8601).format("dddd, MMMM Do YYYY");
+        }
+        else if(perfect_date === "ym") {
+            formatted_date = moment(new Date(date), moment.ISO_8601).format("MMMM, YYYY");
+        }
+        else {
+            formatted_date = year;
+        }
+        return formatted_date;
+    },
+
+    round: function(value, precision) {
+        var multiplier = Math.pow(10, precision || 0);
+        return Math.round(value * multiplier) / multiplier;
+    },
 
     //gets min and max date of entire timeline
     getMinAndMax: function(arr, err) {
@@ -1157,11 +1628,6 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
 
         var currNum = parseInt(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("YYYY"));
 
-
-        //console.log(parseInt(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("YYYY")));
-        //console.log(this.getNearest("Down",5,currNum));
-        //console.log(this.getNearest("Up",5,currNum));
-
         minandmax.push(this.getNearest("Down",5,parseInt(moment(new Date(Math.min.apply(null,dates)), moment.ISO_8601).format("YYYY"))));
 
         minandmax.push(this.getNearest("Up",5,parseInt(moment(new Date(Math.max.apply(null,dates)), moment.ISO_8601).format("YYYY"))));
@@ -1174,6 +1640,37 @@ define(['jquery', 'ractive', 'rv!templates/template', 'text!css/my-widget_embed.
             console.log("Max Date just year: " + minandmax[3]);
         }
         return minandmax;
+    },
+    isEmpty: function(value){
+      return (value == null || value === '');
+    },
+
+
+     /**
+     * Sort object properties (only own properties will be sorted).
+     * @param {object} obj object to sort properties
+     * @param {bool} isNumericSort true - sort object properties as numeric value, false - sort as string value.
+     * @param {bool} reverse false - reverse sorting.
+     * @returns {Array} array of items in [[key,value],[key,value],...] format.
+     function adopted from  https://gist.github.com/umidjons/9614157
+     */
+    sortPropertiesByObj: function(obj, isNumericSort, reverse) {
+        isNumericSort = isNumericSort || false; // by default text sort
+        reverse = reverse || false; // by default no reverse
+
+        var reversed = (reverse) ? -1 : 1;
+
+        var sortable = [];
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+                sortable.push([key, obj[key]]);
+            }
+        }
+        sortable.sort(function (a, b) {
+            return reversed * (parseInt(a[1][0]["start_date"]["year"]) - parseInt(b[1][0]["start_date"]["year"]));
+        });
+
+        return sortable; // array in format [ [ key1, val1 ], [ key2, val2 ], ... ]
     }
   };
 
