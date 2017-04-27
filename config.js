@@ -8,6 +8,6 @@ var requirejs = {
         'amd-loader': "node_modules/amd-loader/amd-loader",
         rv: "node_modules/rv/rv",
         moment: "node_modules/moment/moment",
-        spreadsheets: "node_modules/google-spreadsheets-parser/dist/googleSpreadsheetsParser.min"
+        jquerytouch: "node_modules/jquery-touchswipe/jquery.touchSwipe"
     }
 };

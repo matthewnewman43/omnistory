@@ -21,10 +21,11 @@
   "homepage": "https://github.com/matthewnewman43/omnistory#readme",
   "dependencies": {
     "amd-loader": "0.0.5",
-    "amdclean": "^2.7.0"
-    "google-spreadsheets-parser": "^0.4.0",
+    "amdclean": "^2.7.0",
     "jquery": "^3.1.1",
     "jquery-color-animation": "^1.5.1",
+    "jquery-mobile": "^1.5.0-alpha.1",
+    "jquery-touchswipe": "^1.6.15",
     "jquery-ui-dist": "^1.12.1",
     "moment": "^2.17.1",
     "ractive": "^0.8.10",

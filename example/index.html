@@ -23,10 +23,12 @@
     var script = document.createElement("script"), tag = document.getElementsByTagName("script")[0];
     script.src = "./../embed.min.js";
     script.id = "omnistory-widget";
-    script.setAttribute('height','100');
-    script.setAttribute('width','100');
+    script.setAttribute('height','100%');
+    script.setAttribute('width','100%');
     script.setAttribute('Author-Name','Matt Newman');
     script.setAttribute('Author-Email','newmanm6@tcnj.edu');
+    script.setAttribute('Stakeholder_Names','["Israelis","Palestinians"]');
+    script.setAttribute('Stakeholder_Colors','["#6891E2","#CD2020"]');
     script.setAttribute('data',googleOfIsrael);
     tag.parentNode.insertBefore(script, tag);
   };
